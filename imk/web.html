@@ -211,31 +211,51 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📚 Toko Buku Kita - Kasir</h1>
-            <p>Klik tombol untuk mulai transaksi</p>
+            <h1>📚 Toko Buku Kita </h1>
         </div>
 
         <!-- Quick Actions -->
         <div style="text-align: center; margin-bottom: 20px;">
-            <button class="btn btn-primary" onclick="openModal('transaksiModal')">💰 Transaksi Baru</button>
+            <button class="btn btn-primary" onclick="openModal('transaksiModal')">💰 pelanggan</button>
             <button class="btn btn-primary" onclick="openModal('stokModal')">📦 Kelola Stok</button>
-            <button class="btn btn-primary" onclick="printReport()">📊 Laporan</button>
         </div>
+<!-- STRUK -->
+<div id="struk" style="display:none; padding:20px; font-family:Courier New;">
+    <h2 style="text-align:center;">TOKO BUKU KITA</h2>
+    <p style="text-align:center;" id="tanggalStruk"></p>
+    
 
-        <!-- Cart Section -->
-        <div class="cart-section">
-            <h2>🛒 Keranjang Transaksi</h2>
-            <div id="cartItems"></div>
-            <div class="cart-total">
-                <div>Total: <span id="cartTotal">Rp 0</span></div>
-                <button class="btn btn-success" onclick="checkout()" style="margin-top: 10px;">✅ Checkout & Bayar</button>
-            </div>
-        </div>
+    <hr>
 
+    <div id="isiStruk"></div>
+
+    <hr>
+
+    <h3>Total: <span id="totalStruk"></span></h3>
+
+    <p style="text-align:center;">
+        Terima Kasih 🙏
+    </p>
+</div>
         <!-- Buku Available -->
         <div class="cart-section">
             <h2>📖 Daftar Buku Tersedia</h2>
             <div id="bookList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;"></div>
+            <div style="text-align:center; margin-bottom:20px;">
+
+    <select id="filterKategori"
+            onchange="filterBooks()"
+            style="padding:10px; border-radius:8px; border:none;">
+
+        <option value="Semua">Semua Kategori</option>
+        <option value="Pemrograman">Pemrograman</option>
+        <option value="Pendidikan">Pendidikan</option>
+        <option value="Desain">Desain</option>
+        <option value="Teknologi AI">Teknologi AI</option>
+
+    </select>
+
+</div>
         </div>
     </div>
 
@@ -244,7 +264,7 @@
     <div id="transaksiModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('transaksiModal')">&times;</span>
-            <h2>💰 Transaksi Baru</h2>
+            <h2>💰 pelanggan</h2>
             <form id="transaksiForm">
                 <div class="form-group">
                     <label>Nama Pelanggan</label>
@@ -258,6 +278,14 @@
             </form>
         </div>
     </div>
+ <div class="cart-section">
+            <h2>🛒 Keranjang Transaksi</h2>
+            <div id="cartItems"></div>
+            <div class="cart-total">
+                <div>Total: <span id="cartTotal">Rp 0</span></div>
+                <button class="btn btn-success" onclick="checkout()" style="margin-top: 10px;">✅ Checkout & Bayar</button>
+            </div>
+        </div>
 
     <!-- Stok Modal -->
     <div id="stokModal" class="modal">
@@ -272,8 +300,28 @@
                     📋 Lihat Stok
                 </div>
             </div>
+            
         </div>
     </div>
+      <button class="btn-cetak" onclick="cetakStruk()">
+    <span>🖨️</span> Cetak Struk Pembelian
+    <style>
+.btn-cetak {
+  background-color: #2E86AB;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.tombol-cetak:hover {
+  background-color: #1B4965;
+}
+</style>
+  </button>
 
     <!-- Notification -->
     <div id="notification" class="notification"></div>
@@ -281,11 +329,11 @@
     <script>
         // Data Buku & Transaksi
         let books = [
-            { id: 1, title: "Algoritma & Pemrograman", author: "Budi Santoso", price: 85000, stock: 25 },
-            { id: 2, title: "Matematika Diskrit", author: "Sari Wulandari", price: 95000, stock: 15 },
-            { id: 3, title: "Desain Grafis Modern", author: "Ahmad Fauzi", price: 120000, stock: 8 },
-            { id: 4, title: "Machine Learning", author: "Dr. Andi", price: 150000, stock: 12 },
-            { id: 5, title: "Web Development", author: "Rina Kurnia", price: 75000, stock: 30 }
+            { id: 1, title: "Algoritma & Pemrograman", author: "Budi Santoso",category: "Pemrograman", price: 85000, stock: 25 },
+            { id: 2, title: "Matematika Diskrit", author: "Sari Wulandari",category: "Pendidikan", price: 95000, stock: 15 },
+            { id: 3, title: "Desain Grafis Modern", author: "Ahmad Fauzi",category: "Desain", price: 120000, stock: 8 },
+            { id: 4, title: "Machine Learning", author: "Dr. Andi",category: "Teknologi ", price: 150000, stock: 12 },
+            { id: 5, title: "Web Development", author: "Rina Kurnia",category: "Pemrograman", price: 75000, stock: 30 }
         ];
 
         let cart = [];
@@ -300,18 +348,67 @@
         });
 
         // Display Books
-        function displayBooks() {
-            const bookList = document.getElementById('bookList');
-            bookList.innerHTML = books.map(book => `
-                <div style="padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.3s;"
-                     onclick="addToCart(${book.id})">
-                    <h3>${book.title}</h3>
-                    <p>${book.author}</p>
-                    <p style="font-size: 1.2em; color: #4CAF50; font-weight: bold;">Rp ${formatRupiah(book.price)}</p>
-                    <p>Stok: ${book.stock}</p>
-                </div>
-            `).join('');
-        }
+        function displayBooks(filteredBooks = books) {
+
+    const bookList = document.getElementById('bookList');
+
+    bookList.innerHTML = filteredBooks.map(book => `
+
+        <div style="
+            padding:20px;
+            background:white;
+            border-radius:12px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.1);
+            cursor:pointer;
+            transition:0.3s;
+        "
+        onclick="addToCart(${book.id})">
+
+            <h3>${book.title}</h3>
+
+            <p>${book.author}</p>
+
+            <p style="
+                display:inline-block;
+                background:#4CAF50;
+                color:white;
+                padding:4px 10px;
+                border-radius:20px;
+                font-size:12px;
+                margin:8px 0;
+            ">
+                ${book.category}
+            </p>
+
+            <p style="
+                font-size:1.2em;
+                color:#4CAF50;
+                font-weight:bold;
+            ">
+                Rp ${formatRupiah(book.price)}
+            </p>
+
+            <p>Stok: ${book.stock}</p>
+
+        </div>
+
+    `).join('');
+}
+function filterBooks() {
+
+    const kategori =
+        document.getElementById('filterKategori').value;
+
+    if (kategori === 'Semua') {
+        displayBooks();
+        return;
+    }
+
+    const filtered =
+        books.filter(book => book.category === kategori);
+
+    displayBooks(filtered);
+}
 
         // Add to Cart
         function addToCart(bookId) {
@@ -335,6 +432,7 @@
             updateCart();
             showNotification(`${book.title} ditambahkan ke keranjang`, 'success');
         }
+        
 
         // Update Cart Display
         function updateCart() {
@@ -380,31 +478,72 @@
         }
 
         // Checkout
-        function checkout() {
-            if (cart.length === 0) {
-                showNotification('Keranjang kosong!', 'error');
-                return;
-            }
+       function checkout() {
+    if (cart.length === 0) {
+        showNotification('Keranjang kosong!', 'error');
+        return;
+    }
 
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const customerName = document.getElementById('customerName')?.value || 'Pelanggan Walk-in';
-            
-            // Save transaction
-            const transaction = {
-                id: Date.now(),
-                date: new Date().toLocaleString('id-ID'),
-                customer: customerName,
-                items: [...cart],
-                total: total,
-                status: 'Selesai'
-            };
-            
-            transactions.unshift(transaction);
-            customers.push({ name: customerName, phone: document.getElementById('customerPhone')?.value || '', date: new Date().toLocaleDateString('id-ID') });
-            
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            localStorage.setItem('customers', JSON.stringify(customers));
-            
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const customerName =
+        document.getElementById('customerName')?.value || 'Pelanggan Walk-in';
+
+    // Simpan transaksi
+    const transaction = {
+        id: Date.now(),
+        date: new Date().toLocaleString('id-ID'),
+        customer: customerName,
+        items: [...cart],
+        total: total,
+        status: 'Selesai'
+    };
+
+    transactions.unshift(transaction);
+
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+
+    // Update stok
+    cart.forEach(item => {
+        const book = books.find(b => b.id === item.id);
+        book.stock -= item.quantity;
+    });
+
+    // =========================
+    // BUAT STRUK
+    // =========================
+
+    let isi = '';
+
+    cart.forEach(item =>  {
+        isi += `
+            <p>
+                ${item.title}<br>
+                ${formatRupiah(item.price)} x ${item.quantity}
+                ${customerName}
+            </p>
+        `;
+    });
+
+    document.getElementById('isiStruk').innerHTML = isi;
+
+    document.getElementById('tanggalStruk').innerText =
+        new Date().toLocaleString('id-ID');
+
+    document.getElementById('totalStruk').innerText =
+        formatRupiah(total);
+
+    // kosongkan cart
+    cart = [];
+
+    updateCart();
+    displayBooks();
+    updateStats();
+
+    showNotification('Checkout berhasil!', 'success');
+
+    closeModal('transaksiModal');
+
             // Update stock
             cart.forEach(item => {
                 const book = books.find(b => b.id === item.id);
@@ -416,7 +555,10 @@
             displayBooks();
             updateStats();
             
-            showNotification(`Transaksi berhasil! Total: ${formatRupiah(total)}`, 'success');
+            //yangbuat print cetak 
+
+
+
             closeModal('transaksiModal');
         }
 
@@ -437,23 +579,32 @@
 
         // Stock Management
         function addStock() {
-            const title = prompt('Judul buku baru:');
-            const author = prompt('Penulis:');
-            const price = parseInt(prompt('Harga (Rp):'));
-            const stock = parseInt(prompt('Stok awal:'));
-            
-            if (title && author && price && stock) {
-                books.push({
-                    id: books.length + 1,
-                    title,
-                    author,
-                    price,
-                    stock
-                });
-                displayBooks();
-                showNotification('Buku baru ditambahkan!', 'success');
-            }
-        }
+
+    const title = prompt('Judul buku baru:');
+    const author = prompt('Penulis:');
+    const category = prompt('Kategori buku:');
+    const price = parseInt(prompt('Harga (Rp):'));
+    const stock = parseInt(prompt('Stok awal:'));
+
+    if (title && author && category && price && stock) {
+
+        books.push({
+            id: books.length + 1,
+            title,
+            author,
+            category,
+            price,
+            stock
+        });
+
+        displayBooks();
+
+        showNotification(
+            'Buku baru ditambahkan!',
+            'success'
+        );
+    }
+}
 
         function viewStock() {
             let stockList = '📦 STOK BUKU:\n\n';
@@ -464,6 +615,8 @@
         }
 
         // Reports
+
+        // ubah jadi cetak print
         function printReport() {
             let report = '📊 LAPORAN TRANSAKSI\n\n';
             let totalRevenue = 0;
@@ -476,6 +629,7 @@
             report += `Total Pendapatan: ${formatRupiah(totalRevenue)}`;
             alert(report);
         }
+        
 
         // Update Stats
         function updateStats() {
@@ -493,6 +647,48 @@
                 notification.classList.remove('show');
             }, 3000);
         }
+        function cetakStruk() {
+
+    const struk = document.getElementById('struk').innerHTML;
+
+    const win = window.open('', '', 'width=400,height=600');
+
+    win.document.write(`
+        <html>
+        <head>
+            <title>Cetak Struk</title>
+
+            <style>
+                body{
+                    font-family: Courier New;
+                    padding:20px;
+                }
+
+                h2, p, h3{
+                    margin:5px 0;
+                }
+
+                hr{
+                    border:1px dashed black;
+                }
+            </style>
+        </head>
+
+        <body>
+            ${struk}
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+
+    win.focus();
+
+    setTimeout(() => {
+        win.print();
+        win.close();
+    }, 500);
+}
 
         // Format Rupiah
         function formatRupiah(angka) {
